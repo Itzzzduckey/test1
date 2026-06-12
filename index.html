@@ -1,0 +1,2136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Engine6.0.co Movies</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+    }
+    :root{
+      --text:#f5fdff;
+      --muted:rgba(222,238,242,0.62);
+      --muted-2:rgba(222,238,242,0.42);
+      --panel:rgba(8,16,28,0.92);
+      --panel-2:rgba(7,14,24,0.96);
+      --line:rgba(85,236,255,0.14);
+      --line-strong:rgba(85,236,255,0.26);
+      --teal:#59f3ff;
+      --teal-2:#8ef6ff;
+      --green:#4df2d9;
+      --accent:#34dcff;
+      --discord:#5865F2;
+      --danger:#ff325f;
+      --nav-h:72px;
+      --card-w:178px;
+      --radius:18px;
+      --radius-sm:14px;
+    }
+    html,body{
+      width:100%;
+      min-height:100%;
+      scroll-behavior:smooth;
+      overflow-x:hidden;
+      background:#05090c;
+      color:var(--text);
+    }
+    body{
+      position:relative;
+      isolation:isolate;
+      font-family:"Inter",sans-serif;
+      background:
+        radial-gradient(circle at 50% 100%,rgba(0,235,255,0.42) 0%,rgba(0,235,255,0.16) 14%,rgba(0,235,255,0.06) 28%,rgba(0,0,0,0) 52%),
+        radial-gradient(circle at 50% 78%,rgba(0,200,225,0.10) 0%,rgba(0,0,0,0) 38%),
+        linear-gradient(180deg,#040607 0%,#071015 36%,#09151a 62%,#05090c 100%);
+    }
+    .bg-depth,.beam-wrap,.orb-glow,.noise,.scanlines,.vignette,.frame{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+    }
+    .bg-depth{
+      z-index:0;
+      background:
+        radial-gradient(circle at 16% 22%,rgba(255,255,255,0.018) 0%,rgba(255,255,255,0) 26%),
+        radial-gradient(circle at 84% 18%,rgba(255,255,255,0.014) 0%,rgba(255,255,255,0) 22%),
+        linear-gradient(180deg,rgba(255,255,255,0.012) 0%,rgba(255,255,255,0) 32%);
+      opacity:.9;
+    }
+    .beam-wrap{
+      z-index:1;
+      overflow:hidden;
+    }
+    .beam{
+      position:absolute;
+      top:-12%;
+      width:14vw;
+      height:132%;
+      background:linear-gradient(
+        180deg,
+        rgba(0,0,0,0) 0%,
+        rgba(55,222,255,0.03) 16%,
+        rgba(55,222,255,0.07) 48%,
+        rgba(55,222,255,0.03) 76%,
+        rgba(0,0,0,0) 100%
+      );
+      filter:blur(28px);
+      opacity:.34;
+      transform:skewX(-8deg);
+      animation:drift 12s ease-in-out infinite;
+    }
+    .beam:nth-child(1){left:5%;animation-delay:-1s;}
+    .beam:nth-child(2){left:18%;animation-delay:-5s;}
+    .beam:nth-child(3){left:33%;animation-delay:-2.5s;}
+    .beam:nth-child(4){left:49%;animation-delay:-7s;}
+    .beam:nth-child(5){left:65%;animation-delay:-3.5s;}
+    .beam:nth-child(6){left:80%;animation-delay:-6s;}
+    .orb-glow{
+      z-index:2;
+      background:
+        radial-gradient(circle at 50% 103%,rgba(0,245,255,0.48) 0%,rgba(0,245,255,0.18) 13%,rgba(0,245,255,0.08) 24%,rgba(0,0,0,0) 42%),
+        radial-gradient(circle at 50% 84%,rgba(0,200,225,0.08) 0%,rgba(0,0,0,0) 36%);
+      filter:blur(30px);
+      animation:pulseGlow 6.4s ease-in-out infinite;
+    }
+    #particles{
+      position:fixed;
+      inset:0;
+      z-index:4;
+      pointer-events:none;
+    }
+    .scanlines{
+      z-index:6;
+      opacity:.05;
+      mix-blend-mode:screen;
+      background:repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.04) 0px,
+        rgba(255,255,255,0.012) 1px,
+        rgba(0,0,0,0) 3px,
+        rgba(0,0,0,0) 6px
+      );
+    }
+    .noise{
+      z-index:7;
+      opacity:.28;
+      mix-blend-mode:overlay;
+      background-image:
+        radial-gradient(rgba(255,255,255,0.25) 0.6px,transparent 0.8px),
+        radial-gradient(rgba(255,255,255,0.18) 0.5px,transparent 0.7px),
+        radial-gradient(rgba(255,255,255,0.12) 0.4px,transparent 0.6px);
+      background-size:2px 2px,3px 3px,4px 4px;
+      animation:grainMove .35s steps(2) infinite;
+    }
+    .vignette{
+      z-index:8;
+      background:radial-gradient(circle at center,rgba(0,0,0,0) 38%,rgba(0,0,0,0.18) 72%,rgba(0,0,0,0.48) 100%);
+    }
+    .frame{
+      z-index:30;
+      border:1px solid rgba(85,236,255,0.84);
+      box-shadow:
+        inset 0 0 0 1px rgba(130,243,255,0.08),
+        0 0 20px rgba(0,220,255,0.14);
+    }
+    /* popup */
+    #popup-overlay{
+      position:fixed;
+      inset:0;
+      z-index:9999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      background:rgba(1,6,12,.82);
+      backdrop-filter:blur(12px);
+    }
+    #popup-box{
+      width:min(100%,460px);
+      border-radius:24px;
+      border:1px solid var(--line-strong);
+      background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.05),
+        0 18px 50px rgba(0,0,0,.34),
+        0 0 28px rgba(0,215,255,.08);
+      padding:30px 24px 22px;
+      text-align:center;
+      animation:popupIn .35s cubic-bezier(.19,1,.22,1);
+    }
+    .popup-logo{
+      font-size:1.55rem;
+      font-weight:800;
+      letter-spacing:-.04em;
+      color:#f5fdff;
+    }
+    .popup-logo span{
+      color:var(--teal-2);
+    }
+    .popup-divider{
+      width:44px;
+      height:4px;
+      border-radius:999px;
+      background:linear-gradient(90deg,var(--teal) 0%,var(--teal-2) 100%);
+      margin:14px auto 16px;
+      box-shadow:0 0 16px rgba(89,243,255,.32);
+    }
+    .popup-title{
+      font-size:1.06rem;
+      font-weight:700;
+      color:#f7fdff;
+      margin-bottom:10px;
+    }
+    .popup-body{
+      font-size:.92rem;
+      line-height:1.7;
+      color:var(--muted);
+      margin-bottom:18px;
+    }
+    .popup-body strong{
+      color:#eafcff;
+    }
+    .popup-body a{
+      color:var(--teal);
+      text-decoration:none;
+    }
+    .popup-body a:hover{
+      text-decoration:underline;
+    }
+    .popup-btns{
+      display:grid;
+      gap:10px;
+    }
+    .btn-discord-popup,
+    .btn-adblocker{
+      height:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      text-decoration:none;
+      font-size:.9rem;
+      font-weight:700;
+      transition:transform .28s cubic-bezier(.19,1,.22,1),filter .28s ease,border-color .28s ease,background .28s ease;
+    }
+    .btn-discord-popup{
+      border:1px solid rgba(119,129,255,.35);
+      background:linear-gradient(180deg,rgba(88,101,242,.95) 0%,rgba(67,79,214,.95) 100%);
+      color:#fff;
+      box-shadow:0 14px 28px rgba(88,101,242,.25);
+    }
+    .btn-adblocker{
+      border:1px solid var(--line);
+      background:rgba(9,19,31,.68);
+      color:#dffcff;
+    }
+    .btn-discord-popup:hover,
+    .btn-adblocker:hover{
+      transform:translateY(-1px);
+      filter:brightness(1.05);
+    }
+    .btn-skip{
+      background:none;
+      border:none;
+      color:var(--muted-2);
+      font-size:.8rem;
+      font-weight:600;
+      cursor:pointer;
+      padding:6px;
+      transition:color .2s ease;
+    }
+    .btn-skip:hover{
+      color:#fff;
+    }
+    /* desktop nav */
+    #desktopNav{
+      position:fixed;
+      top:16px;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:20;
+      width:min(1220px,calc(100% - 34px));
+      height:60px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+      padding:0 16px 0 18px;
+      border-radius:999px;
+      border:1px solid rgba(67,218,255,0.18);
+      background:linear-gradient(180deg,rgba(2,12,25,0.94) 0%,rgba(1,7,18,0.96) 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 0 0 1px rgba(0,225,255,0.03),
+        0 10px 26px rgba(0,0,0,0.28);
+      backdrop-filter:blur(8px);
+    }
+    .nav-logo{
+      white-space:nowrap;
+      font-size:1.15rem;
+      font-weight:800;
+      letter-spacing:-.04em;
+      color:#f7fdff;
+      cursor:pointer;
+      user-select:none;
+    }
+    .nav-logo span{
+      color:var(--teal-2);
+    }
+    .nav-center{
+      flex:1;
+      display:flex;
+      justify-content:center;
+    }
+    .search-wrap{
+      width:100%;
+      max-width:420px;
+      position:relative;
+    }
+    .search-icon{
+      position:absolute;
+      left:12px;
+      top:50%;
+      transform:translateY(-50%);
+      color:rgba(214,227,235,0.44);
+      pointer-events:none;
+    }
+    #searchBox{
+      width:100%;
+      height:40px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(7,13,22,.72);
+      color:#f5fdff;
+      outline:none;
+      padding:0 16px 0 38px;
+      font-family:"Inter",sans-serif;
+      font-size:.88rem;
+      transition:border-color .25s ease,background .25s ease,box-shadow .25s ease;
+    }
+    #searchBox::placeholder{
+      color:rgba(214,227,235,0.38);
+    }
+    #searchBox:focus{
+      border-color:rgba(115,239,255,.48);
+      background:rgba(9,20,34,.8);
+      box-shadow:0 0 0 4px rgba(89,243,255,.05);
+    }
+    .nav-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-shrink:0;
+    }
+    .mode-toggle,
+    .nav-discord-btn{
+      height:38px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:0 16px;
+      font-size:.82rem;
+      font-weight:700;
+      transition:transform .28s cubic-bezier(.19,1,.22,1),border-color .28s ease,box-shadow .28s ease,background .28s ease,filter .28s ease;
+      white-space:nowrap;
+    }
+    .mode-toggle{
+      border:1px solid rgba(78,230,255,0.4);
+      background:linear-gradient(180deg,rgba(5,54,82,0.62) 0%,rgba(3,31,50,0.56) 100%);
+      color:#bff8ff;
+      cursor:pointer;
+    }
+    .nav-discord-btn{
+      text-decoration:none;
+      border:1px solid rgba(88,101,242,.26);
+      background:linear-gradient(180deg,rgba(88,101,242,.95) 0%,rgba(67,79,214,.95) 100%);
+      color:#fff;
+      box-shadow:0 10px 18px rgba(88,101,242,.18);
+    }
+    .mode-toggle:hover,
+    .nav-discord-btn:hover{
+      transform:translateY(-1px);
+      filter:brightness(1.05);
+    }
+    /* desktop hero */
+    #heroSection{
+      position:relative;
+      display:none;
+      margin-top:102px;
+      padding:18px 18px 0;
+      z-index:12;
+    }
+    .hero-shell{
+      width:min(1220px,100%);
+      margin:0 auto;
+      position:relative;
+      min-height:580px;
+      border-radius:28px;
+      overflow:hidden;
+      border:1px solid var(--line-strong);
+      background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.04),
+        0 18px 40px rgba(0,0,0,.26);
+    }
+    #heroBg{
+      position:absolute;
+      inset:0;
+      background-size:cover;
+      background-position:center 20%;
+      filter:contrast(1.04) saturate(1.08) brightness(.72);
+      transform:scale(1.02);
+    }
+    .hero-gradient{
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(90deg,rgba(6,14,24,.88) 0%,rgba(7,18,29,.68) 42%,rgba(7,18,29,.24) 70%,rgba(7,18,29,.38) 100%),
+        linear-gradient(180deg,rgba(0,0,0,.04) 0%,rgba(0,0,0,.28) 100%);
+    }
+    .hero-bottom-fade{
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      height:48%;
+      background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(5,10,17,.92) 100%);
+    }
+    .hero-content{
+      position:absolute;
+      left:44px;
+      bottom:42px;
+      max-width:560px;
+      z-index:2;
+    }
+    .hero-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      height:32px;
+      padding:0 14px;
+      border-radius:999px;
+      border:1px solid rgba(74,232,196,0.18);
+      background:rgba(5,54,52,0.42);
+      color:#4df2d9;
+      font-size:.72rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:16px;
+    }
+    .hero-badge::before{
+      content:"";
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:#22ebbe;
+      box-shadow:0 0 10px rgba(34,235,190,.45);
+    }
+    #heroTitle{
+      font-size:clamp(2.5rem,5vw,4.2rem);
+      line-height:.96;
+      letter-spacing:-.06em;
+      font-weight:800;
+      color:#f5fdff;
+      margin-bottom:14px;
+      text-shadow:0 0 22px rgba(0,225,255,.03);
+    }
+    #heroMeta{
+      font-size:.82rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      color:rgba(187,211,224,0.36);
+      margin-bottom:16px;
+    }
+    #heroOverview{
+      font-size:.98rem;
+      line-height:1.68;
+      color:var(--muted);
+      max-width:540px;
+      margin-bottom:24px;
+      display:-webkit-box;
+      -webkit-line-clamp:4;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+    .hero-btn{
+      min-width:168px;
+      height:48px;
+      padding:0 24px;
+      border:none;
+      border-radius:14px;
+      background:linear-gradient(180deg,#33dff2 0%,#22c5dc 100%);
+      color:#03131a;
+      font-size:.95rem;
+      font-weight:800;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.28),
+        0 14px 28px rgba(0,220,255,.18);
+      transition:transform .25s ease,filter .25s ease;
+    }
+    .hero-btn:hover{
+      transform:translateY(-1px);
+      filter:brightness(1.05);
+    }
+    /* desktop player */
+    #playerSection{
+      display:none;
+      position:relative;
+      z-index:12;
+      padding:110px 18px 0;
+    }
+    .player-wrap{
+      width:min(1220px,100%);
+      margin:0 auto;
+    }
+    .player-panel{
+      border-radius:24px;
+      border:1px solid var(--line-strong);
+      background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.04),
+        0 18px 40px rgba(0,0,0,.26);
+      padding:22px;
+    }
+    .player-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+    #playerTitle{
+      font-size:clamp(1.8rem,3vw,2.6rem);
+      line-height:1;
+      letter-spacing:-.05em;
+      font-weight:800;
+      color:#f5fdff;
+    }
+    .close-player{
+      min-width:148px;
+      height:42px;
+      padding:0 18px;
+      border-radius:12px;
+      border:1px solid rgba(140,245,255,.28);
+      background:rgba(7,13,22,.68);
+      color:#dffcff;
+      font-size:.86rem;
+      font-weight:700;
+      cursor:pointer;
+      transition:transform .25s ease,border-color .25s ease,background .25s ease;
+    }
+    .close-player:hover{
+      transform:translateY(-1px);
+      border-color:rgba(182,249,255,.48);
+      background:rgba(9,20,34,.82);
+    }
+    #player{
+      width:100%;
+      aspect-ratio:16/9;
+      border:none;
+      border-radius:18px;
+      background:#000;
+      display:block;
+      overflow:hidden;
+    }
+    .episode-controls{
+      margin-top:18px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .ep-label{
+      font-size:.72rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:rgba(187,211,224,0.38);
+    }
+    .ep-select{
+      min-width:170px;
+      height:40px;
+      padding:0 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(7,13,22,.72);
+      color:#f5fdff;
+      outline:none;
+      font-family:"Inter",sans-serif;
+      font-size:.84rem;
+      transition:border-color .25s ease,background .25s ease;
+    }
+    .ep-select:focus{
+      border-color:rgba(115,239,255,.48);
+      background:rgba(9,20,34,.8);
+    }
+    /* main content */
+    #mainContent{
+      position:relative;
+      z-index:12;
+      padding:26px 0 60px;
+    }
+    .row-section{
+      width:min(1220px,100%);
+      margin:0 auto 26px;
+      padding:0 18px;
+    }
+    .row-header{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:16px;
+      padding:0 4px;
+      flex-wrap:wrap;
+    }
+    .row-title{
+      font-size:clamp(1.5rem,2.4vw,2rem);
+      line-height:1;
+      letter-spacing:-.05em;
+      font-weight:800;
+      color:#f7fdff;
+    }
+    .row-subtitle{
+      font-size:.72rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      color:rgba(187,211,224,0.34);
+    }
+    .row-wrapper{
+      position:relative;
+    }
+    .row-scroll{
+      display:flex;
+      gap:16px;
+      overflow-x:auto;
+      padding:6px 4px 10px;
+      scroll-behavior:smooth;
+      scrollbar-width:none;
+      -ms-overflow-style:none;
+    }
+    .row-scroll::-webkit-scrollbar{
+      display:none;
+    }
+    .arrow-btn{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      z-index:5;
+      width:46px;
+      height:46px;
+      border-radius:50%;
+      border:1px solid var(--line-strong);
+      background:linear-gradient(180deg,rgba(9,18,31,.92) 0%,rgba(7,14,24,.98) 100%);
+      color:#dffcff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .25s ease,transform .25s ease,border-color .25s ease,background .25s ease;
+      box-shadow:0 12px 24px rgba(0,0,0,.24);
+    }
+    .row-wrapper.hovered .arrow-btn{
+      opacity:1;
+      pointer-events:auto;
+    }
+    .arrow-btn:hover{
+      border-color:rgba(115,239,255,.5);
+      background:rgba(9,20,34,.92);
+    }
+    .arrow-left{ left:-6px; }
+    .arrow-right{ right:-6px; }
+    .arrow-btn:disabled{ opacity:0 !important; pointer-events:none !important; }
+    .card{
+      flex:0 0 var(--card-w);
+      border-radius:18px;
+      overflow:hidden;
+      cursor:pointer;
+      text-decoration:none;
+      border:1px solid rgba(85,236,255,0.14);
+      background:linear-gradient(180deg,rgba(8,18,29,0.92) 0%,rgba(5,11,20,0.96) 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 16px 34px rgba(0,0,0,0.28);
+      transition: all 0.35s cubic-bezier(0.19,1,0.22,1);
+      position:relative;
+    }
+    .card:hover{
+      transform: translateY(-6px) scale(1.04);
+      border-color: rgba(89, 243, 255, 0.55);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        0 24px 48px rgba(0,0,0,0.38),
+        0 0 32px rgba(89,243,255,0.18);
+      background: linear-gradient(180deg, rgba(12,28,44,0.94) 0%, rgba(8,18,32,0.98) 100%);
+    }
+    .card img{
+      width:100%;
+      aspect-ratio:2/3;
+      object-fit:cover;
+      display:block;
+      filter:saturate(1.04) contrast(1.03) brightness(.82);
+      transition: transform 0.4s ease;
+    }
+    .card:hover img {
+      transform: scale(1.06);
+    }
+    .card-info{
+      position:relative;
+      z-index:2;
+      padding:12px 12px 14px;
+    }
+    .card-title{
+      font-size:.88rem;
+      font-weight:700;
+      color:#f7fdff;
+      line-height:1.35;
+      display:-webkit-box;
+      -webkit-line-clamp:1;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      margin-bottom:4px;
+    }
+    .card-tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:.64rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#4df2d9;
+    }
+    .card-tag::before{
+      content:"";
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:#22ebbe;
+      box-shadow:0 0 10px rgba(34,235,190,.45);
+    }
+    .loading-row{
+      display:flex;
+      gap:16px;
+      padding:6px 4px 10px;
+      overflow:hidden;
+    }
+    .skeleton-card{
+      flex:0 0 var(--card-w);
+      border-radius:18px;
+      aspect-ratio:2/3;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg,rgba(9,18,31,0.84) 0%,rgba(7,14,24,0.92) 100%);
+      animation:pulse 1.6s ease-in-out infinite;
+    }
+    .search-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+      gap:16px;
+      padding:0 18px;
+      width:min(1220px,100%);
+      margin:0 auto;
+    }
+    .search-grid .card{
+      flex:none;
+    }
+    .empty-state{
+      width:min(1220px,100%);
+      margin:0 auto;
+      text-align:center;
+      padding:80px 24px;
+      font-size:1rem;
+      color:var(--muted);
+      position:relative;
+      z-index:12;
+    }
+    /* footer */
+    footer{
+      position:relative;
+      z-index:12;
+      padding:0 18px 36px;
+    }
+    .footer-inner{
+      width:min(1220px,100%);
+      margin:0 auto;
+      padding-top:22px;
+      border-top:1px solid rgba(85,236,255,0.08);
+      display:grid;
+      grid-template-columns:1.2fr 1fr;
+      gap:28px;
+      align-items:start;
+    }
+    .footer-logo{
+      font-size:1.2rem;
+      font-weight:800;
+      letter-spacing:-.04em;
+      color:#f7fdff;
+      margin-bottom:8px;
+    }
+    .footer-logo span{
+      color:var(--teal-2);
+    }
+    .footer-brand p{
+      font-size:.9rem;
+      line-height:1.7;
+      color:var(--muted);
+    }
+    .footer-links h4{
+      font-size:.74rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      color:rgba(187,211,224,0.34);
+      margin-bottom:14px;
+    }
+    .footer-links a{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-height:44px;
+      padding:0 14px;
+      border-radius:14px;
+      border:1px solid rgba(85,236,255,0.10);
+      background:rgba(7,13,22,0.62);
+      color:#f1fbff;
+      text-decoration:none;
+      margin-bottom:10px;
+      font-size:.88rem;
+      font-weight:700;
+      transition:border-color .25s ease,transform .25s ease,background .25s ease;
+    }
+    .footer-links a:hover{
+      transform:translateY(-1px);
+      border-color:rgba(85,236,255,0.24);
+      background:rgba(9,20,34,0.78);
+    }
+    .dc-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:26px;
+      height:26px;
+      border-radius:9px;
+      background:rgba(89,243,255,0.10);
+      border:1px solid rgba(89,243,255,0.14);
+      color:#72f3ff;
+      flex-shrink:0;
+    }
+    .footer-copy{
+      width:min(1220px,100%);
+      margin:16px auto 0;
+      padding-top:16px;
+      border-top:1px solid rgba(85,236,255,0.08);
+      text-align:center;
+      font-size:.8rem;
+      color:rgba(214,227,235,0.44);
+    }
+    /* mobile shell */
+    #mobileShell{
+      display:none;
+      position:fixed;
+      inset:0;
+      z-index:500;
+      flex-direction:column;
+      overflow:hidden;
+      background:transparent;
+    }
+    .m-statusbar{
+      flex-shrink:0;
+      height:28px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 14px;
+      color:rgba(255,255,255,.72);
+      font-size:.68rem;
+      font-weight:700;
+      background:rgba(2,8,15,.94);
+      border-bottom:1px solid rgba(85,236,255,.06);
+      backdrop-filter:blur(8px);
+      z-index:2;
+    }
+    .m-statusbar .time{
+      color:#fff;
+    }
+    .m-status-icons{
+      display:flex;
+      align-items:center;
+      gap:5px;
+    }
+    .m-topbar{
+      flex-shrink:0;
+      min-height:58px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-bottom:1px solid rgba(85,236,255,.08);
+      background:linear-gradient(180deg,rgba(2,12,25,0.94) 0%,rgba(1,7,18,0.96) 100%);
+      backdrop-filter:blur(8px);
+      z-index:2;
+    }
+    .m-topbar-logo{
+      font-size:1rem;
+      font-weight:800;
+      letter-spacing:-.04em;
+      color:#f7fdff;
+      white-space:nowrap;
+      user-select:none;
+      cursor:pointer;
+    }
+    .m-topbar-logo span{
+      color:var(--teal-2);
+    }
+    .m-topbar-search{
+      flex:1;
+      position:relative;
+    }
+    .m-topbar-search svg{
+      position:absolute;
+      left:11px;
+      top:50%;
+      transform:translateY(-50%);
+      color:rgba(214,227,235,0.44);
+      pointer-events:none;
+    }
+    #mSearchBox{
+      width:100%;
+      height:40px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(7,13,22,.72);
+      color:#f5fdff;
+      outline:none;
+      padding:0 14px 0 36px;
+      font-family:"Inter",sans-serif;
+      font-size:.84rem;
+    }
+    #mSearchBox::placeholder{
+      color:rgba(214,227,235,0.38);
+    }
+    .m-topbar-dc{
+      width:38px;
+      height:38px;
+      border-radius:50%;
+      background:linear-gradient(180deg,rgba(88,101,242,.95) 0%,rgba(67,79,214,.95) 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+      text-decoration:none;
+      box-shadow:0 10px 18px rgba(88,101,242,.18);
+    }
+    .m-content{
+      flex:1;
+      overflow-y:auto;
+      overflow-x:hidden;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+      position:relative;
+      z-index:1;
+      padding-bottom:8px;
+    }
+    .m-content::-webkit-scrollbar{
+      display:none;
+    }
+    .m-hero{
+      position:relative;
+      height:260px;
+      overflow:hidden;
+      margin:12px 12px 10px;
+      border-radius:22px;
+      border:1px solid var(--line-strong);
+      background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.04),
+        0 18px 40px rgba(0,0,0,.26);
+    }
+    .m-hero-bg{
+      position:absolute;
+      inset:0;
+      background-size:cover;
+      background-position:center 20%;
+      filter:contrast(1.04) saturate(1.08) brightness(.72);
+    }
+    .m-hero-grad{
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(5,10,17,.18) 40%,rgba(5,10,17,.92) 100%),
+        linear-gradient(90deg,rgba(6,14,24,.20) 0%,rgba(6,14,24,.08) 100%);
+    }
+    .m-hero-content{
+      position:absolute;
+      left:14px;
+      right:14px;
+      bottom:14px;
+      z-index:2;
+    }
+    .m-hero-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      height:26px;
+      padding:0 10px;
+      border-radius:999px;
+      border:1px solid rgba(74,232,196,0.18);
+      background:rgba(5,54,52,0.42);
+      color:#4df2d9;
+      font-size:.62rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:10px;
+    }
+    .m-hero-badge::before{
+      content:"";
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:#22ebbe;
+      box-shadow:0 0 10px rgba(34,235,190,.45);
+    }
+    .m-hero-title{
+      font-size:1.55rem;
+      line-height:1;
+      letter-spacing:-.05em;
+      font-weight:800;
+      color:#f7fdff;
+      margin-bottom:8px;
+    }
+    .m-hero-meta{
+      font-size:.68rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.1em;
+      color:rgba(187,211,224,0.40);
+      margin-bottom:12px;
+    }
+    .m-hero-btn{
+      min-width:140px;
+      height:40px;
+      padding:0 18px;
+      border:none;
+      border-radius:12px;
+      background:linear-gradient(180deg,#33dff2 0%,#22c5dc 100%);
+      color:#03131a;
+      font-size:.82rem;
+      font-weight:800;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.28),
+        0 14px 28px rgba(0,220,255,.18);
+    }
+    .m-tabs{
+      display:flex;
+      gap:8px;
+      padding:6px 12px 2px;
+      overflow-x:auto;
+      scrollbar-width:none;
+    }
+    .m-tabs::-webkit-scrollbar{ display:none; }
+    .m-tab{
+      flex-shrink:0;
+      height:34px;
+      padding:0 14px;
+      border-radius:999px;
+      border:1px solid rgba(85,236,255,0.10);
+      background:rgba(7,13,22,0.62);
+      color:#dffcff;
+      font-size:.76rem;
+      font-weight:700;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .m-tab.active{
+      background:linear-gradient(180deg,rgba(5,54,82,0.76) 0%,rgba(3,31,50,0.72) 100%);
+      border-color:rgba(115,239,255,0.48);
+      color:#bff8ff;
+    }
+    .m-section-label,
+    .m-search-label{
+      padding:12px 14px 10px;
+      font-size:1.2rem;
+      line-height:1;
+      letter-spacing:-.04em;
+      font-weight:800;
+      color:#f7fdff;
+    }
+    .m-card-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      padding:0 12px 12px;
+    }
+    .m-card{
+      position:relative;
+      border-radius:14px;
+      overflow:hidden;
+      cursor:pointer;
+      border:1px solid rgba(85,236,255,0.14);
+      background:linear-gradient(180deg,rgba(8,18,29,0.92) 0%,rgba(5,11,20,0.96) 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 12px 24px rgba(0,0,0,0.22);
+      transition: all 0.28s ease;
+    }
+    .m-card:active{
+      transform:scale(.97);
+      border-color:rgba(99,237,255,0.24);
+    }
+    .m-card:hover {
+      transform: translateY(-4px) scale(1.03);
+      border-color: rgba(89, 243, 255, 0.5);
+      box-shadow:
+        0 16px 36px rgba(0,0,0,0.32),
+        0 0 24px rgba(89,243,255,0.14);
+    }
+    .m-card img{
+      width:100%;
+      aspect-ratio:2/3;
+      object-fit:cover;
+      display:block;
+      filter:saturate(1.04) contrast(1.03) brightness(.82);
+    }
+    .m-card-label{
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      padding:9px 8px 8px;
+      background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(5,10,17,.96) 100%);
+    }
+    .m-card-title{
+      font-size:.65rem;
+      font-weight:700;
+      color:#fff;
+      line-height:1.22;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+    .m-card-type{
+      margin-top:3px;
+      font-size:.5rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#4df2d9;
+    }
+    .m-skel-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      padding:0 12px 12px;
+    }
+    .m-skel-card,
+    .m-hero-skel{
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg,rgba(9,18,31,0.84) 0%,rgba(7,14,24,0.92) 100%);
+      animation:pulse 1.6s ease-in-out infinite;
+    }
+    .m-skel-card{ aspect-ratio:2/3; }
+    .m-hero-skel{ height:260px; margin:12px 12px 10px; }
+    #mPlayerScreen{
+      display:none;
+      flex-direction:column;
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg,#05090c 0%,#071015 36%,#05090c 100%);
+      z-index:100;
+    }
+    .m-player-topbar{
+      flex-shrink:0;
+      min-height:56px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-bottom:1px solid rgba(85,236,255,.08);
+      background:linear-gradient(180deg,rgba(2,12,25,0.94) 0%,rgba(1,7,18,0.96) 100%);
+      backdrop-filter:blur(8px);
+    }
+    .m-back-btn{
+      width:38px;
+      height:38px;
+      border-radius:50%;
+      border:1px solid var(--line);
+      background:rgba(7,13,22,.72);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      flex-shrink:0;
+    }
+    .m-player-name{
+      flex:1;
+      font-size:.9rem;
+      font-weight:700;
+      color:#fff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    #mPlayer{
+      width:100%;
+      aspect-ratio:16/9;
+      border:none;
+      background:#000;
+      flex-shrink:0;
+    }
+    .m-player-info{
+      padding:16px 14px 18px;
+      flex:1;
+      overflow-y:auto;
+    }
+    .m-player-title{
+      font-size:1.6rem;
+      line-height:1;
+      letter-spacing:-.05em;
+      font-weight:800;
+      color:#f5fdff;
+      margin-bottom:8px;
+    }
+    .m-player-meta{
+      font-size:.7rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.1em;
+      color:rgba(187,211,224,0.40);
+      margin-bottom:14px;
+    }
+    .m-ep-row{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .m-ep-label{
+      font-size:.68rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:rgba(187,211,224,0.38);
+    }
+    .m-ep-select{
+      flex:1;
+      min-width:0;
+      height:40px;
+      padding:0 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(7,13,22,.72);
+      color:#f5fdff;
+      outline:none;
+      font-family:"Inter",sans-serif;
+      font-size:.82rem;
+    }
+    .m-bottomnav{
+      flex-shrink:0;
+      height:68px;
+      display:flex;
+      align-items:stretch;
+      border-top:1px solid rgba(85,236,255,.08);
+      background:linear-gradient(180deg,rgba(2,12,25,0.94) 0%,rgba(1,7,18,0.96) 100%);
+      backdrop-filter:blur(8px);
+      z-index:2;
+    }
+    .m-nav-item{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      background:transparent;
+      border:none;
+      color:rgba(214,227,235,.42);
+      cursor:pointer;
+      transition:color .2s ease;
+    }
+    .m-nav-item.active{
+      color:var(--teal);
+    }
+    .m-nav-item span{
+      font-size:.62rem;
+      font-weight:700;
+      font-family:"Inter",sans-serif;
+    }
+    .m-empty{
+      text-align:center;
+      padding:56px 18px;
+      color:var(--muted);
+      font-size:.9rem;
+    }
+    body.mobile-mode #desktopNav,
+    body.mobile-mode #heroSection,
+    body.mobile-mode #playerSection,
+    body.mobile-mode #mainContent,
+    body.mobile-mode footer{
+      display:none !important;
+    }
+    body.mobile-mode #mobileShell{
+      display:flex;
+    }
+    #mobileShell{
+      display:none;
+    }
+    svg{
+      display:block;
+    }
+    @keyframes pulseGlow{
+      0%,100%{transform:scale(1);opacity:.92;}
+      50%{transform:scale(1.04);opacity:1;}
+    }
+    @keyframes drift{
+      0%,100%{transform:translateY(-1%) translateX(0) skewX(-8deg);opacity:.26;}
+      50%{transform:translateY(2%) translateX(8px) skewX(-6deg);opacity:.36;}
+    }
+    @keyframes grainMove{
+      0%{transform:translate(0,0);}
+      20%{transform:translate(-1%,1%);}
+      40%{transform:translate(1%,-1%);}
+      60%{transform:translate(-1%,0);}
+      80%{transform:translate(1%,1%);}
+      100%{transform:translate(0,0);}
+    }
+    @keyframes pulse{
+      0%,100%{opacity:.58;}
+      50%{opacity:.22;}
+    }
+    @keyframes popupIn{
+      from{opacity:0;transform:translateY(18px) scale(.98);}
+      to{opacity:1;transform:translateY(0) scale(1);}
+    }
+    @media (max-width:1050px){
+      #desktopNav{
+        width:calc(100% - 24px);
+      }
+      .footer-inner{
+        grid-template-columns:1fr;
+      }
+    }
+    @media (max-width:820px){
+      #desktopNav{
+        gap:10px;
+        padding:0 12px;
+      }
+      .nav-discord-btn span,
+      .mode-toggle span{
+        display:none;
+      }
+      .mode-toggle,
+      .nav-discord-btn{
+        width:40px;
+        padding:0;
+      }
+      .hero-content{
+        left:24px;
+        right:24px;
+        bottom:24px;
+        max-width:none;
+      }
+    }
+    @media (max-width:640px){
+      .search-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- The rest of your HTML (popup, nav, hero, player, main, footer, mobile shell, script) stays EXACTLY the same -->
+
+  <div class="bg-depth"></div>
+  <div class="beam-wrap">
+    <div class="beam"></div>
+    <div class="beam"></div>
+    <div class="beam"></div>
+    <div class="beam"></div>
+    <div class="beam"></div>
+    <div class="beam"></div>
+  </div>
+  <div class="orb-glow"></div>
+  <canvas id="particles"></canvas>
+  <div class="scanlines"></div>
+  <div class="noise"></div>
+  <div class="vignette"></div>
+  <div class="frame"></div>
+  <!-- POPUP -->
+  <div id="popup-overlay">
+    <div id="popup-box">
+      <div class="popup-logo">Engine6.0<span>Movies</span></div>
+      <div class="popup-divider"></div>
+      <div class="popup-title">Welcome</div>
+      <div class="popup-body">
+        Stream movies and TV shows for free, anytime.<br><br>
+        <strong>Join our community</strong> on Discord to request movies, get updates, and connect with other members.<br><br>
+        <strong>Seeing ads?</strong> Install <a href="https://ublockorigin.com/" target="_blank">uBlock Origin</a> for a cleaner watching experience.
+      </div>
+      <div class="popup-btns">
+        <a class="btn-discord-popup" href="https://discord.gg/ybvGC4u8Cm" target="_blank">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+          Join Discord Community
+        </a>
+        <a class="btn-adblocker" href="https://ublockorigin.com/" target="_blank">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Install uBlock Origin
+        </a>
+        <button class="btn-skip" onclick="closePopup()">Skip, start watching</button>
+      </div>
+    </div>
+  </div>
+  <!-- DESKTOP NAV -->
+  <nav id="desktopNav">
+    <div class="nav-logo" onclick="backToHome()">Engine6.0<span>Movies</span></div>
+    <div class="nav-center">
+      <div class="search-wrap">
+        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="searchBox" placeholder="Search movies or shows..." aria-label="Search">
+      </div>
+    </div>
+    <div class="nav-right">
+      <button class="mode-toggle" id="modeToggle" onclick="toggleMode()">
+        <svg id="modeIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+        </svg>
+        <span id="modeLabel">Mobile View</span>
+      </button>
+      <a class="nav-discord-btn" href="https://discord.gg/ybvGC4u8Cm" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        <span>Discord</span>
+      </a>
+    </div>
+  </nav>
+  <!-- HERO -->
+  <section id="heroSection">
+    <div class="hero-shell">
+      <div id="heroBg"></div>
+      <div class="hero-gradient"></div>
+      <div class="hero-bottom-fade"></div>
+      <div class="hero-content">
+        <span class="hero-badge">Trending Now</span>
+        <div id="heroTitle"></div>
+        <div id="heroMeta"></div>
+        <div id="heroOverview"></div>
+        <button class="hero-btn" id="heroPlayBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Watch Now
+        </button>
+      </div>
+    </div>
+  </section>
+  <!-- PLAYER -->
+  <section id="playerSection">
+    <div class="player-wrap">
+      <div class="player-panel">
+        <div class="player-header">
+          <div id="playerTitle"></div>
+          <button class="close-player" onclick="closePlayer()">Close Player</button>
+        </div>
+        <iframe id="player" allowfullscreen loading="lazy"></iframe>
+        <div class="episode-controls" id="episodeControls"></div>
+      </div>
+    </div>
+  </section>
+  <!-- MAIN -->
+  <main id="mainContent"></main>
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-logo">Engine6.0<span>Movies</span></div>
+        <p>Free streaming platform for movies and TV shows, available anytime.</p>
+        <p style="margin-top:.45rem;">Made by <strong style="color:#eafcff;">Engine6.0</strong> · Team <strong style="color:#eafcff;">Engine6.0.co</strong></p>
+      </div>
+      <div class="footer-links">
+        <h4>Community & Tools</h4>
+        <a href="https://discord.gg/ybvGC4u8Cm" target="_blank">
+          <span class="dc-pill">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+          </span>
+          Join Engine6.0 Community
+        </a>
+        <a href="https://ublockorigin.com/" target="_blank">
+          <span class="dc-pill">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </span>
+          uBlock Origin — Block Ads
+        </a>
+      </div>
+    </div>
+    <div class="footer-copy">2025 Engine6.0 Movies. All rights reserved.</div>
+  </footer>
+  <!-- MOBILE SHELL -->
+  <div id="mobileShell">
+    <div class="m-statusbar">
+      <span class="time" id="mTime">9:41</span>
+      <div class="m-status-icons">
+        <svg width="14" height="10" viewBox="0 0 14 10" fill="rgba(255,255,255,.8)">
+          <rect x="0" y="7" width="2" height="3" rx=".5"/>
+          <rect x="3" y="5" width="2" height="5" rx=".5"/>
+          <rect x="6" y="3" width="2" height="7" rx=".5"/>
+          <rect x="9" y="1" width="2" height="9" rx=".5"/>
+          <rect x="12" y="0" width="2" height="10" rx=".5"/>
+        </svg>
+        <svg width="14" height="10" viewBox="0 0 24 18" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2.5" stroke-linecap="round">
+          <path d="M1 6C5.5 1.5 18.5 1.5 23 6"/>
+          <path d="M4.5 10C7.5 7 16.5 7 19.5 10"/>
+          <path d="M8.5 14C10 12.5 14 12.5 15.5 14"/>
+          <circle cx="12" cy="17.5" r="1" fill="rgba(255,255,255,.8)" stroke="none"/>
+        </svg>
+        <svg width="22" height="11" viewBox="0 0 22 11" fill="none">
+          <rect x="0.5" y="0.5" width="18" height="10" rx="2.5" stroke="rgba(255,255,255,.6)" stroke-width="1"/>
+          <rect x="2" y="2" width="13" height="7" rx="1.5" fill="rgba(255,255,255,.85)"/>
+          <path d="M19.5 3.5v4" stroke="rgba(255,255,255,.5)" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+    <div class="m-topbar">
+      <div class="m-topbar-logo" id="mLogo" onclick="mobileGoHome()">Engine6.0<span>Movies</span></div>
+      <div class="m-topbar-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="mSearchBox" placeholder="Search movies or shows...">
+      </div>
+      <a class="m-topbar-dc" href="https://discord.gg/Q3uSvEuc" target="_blank" title="Join Discord">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+      </a>
+    </div>
+    <div class="m-content" id="mContent"></div>
+    <div id="mPlayerScreen">
+      <div class="m-player-topbar">
+        <button class="m-back-btn" onclick="mClosePlayer()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="m-player-name" id="mPlayerName"></div>
+      </div>
+      <iframe id="mPlayer" allowfullscreen loading="lazy"></iframe>
+      <div class="m-player-info">
+        <div class="m-player-title" id="mPlayerTitle"></div>
+        <div class="m-player-meta" id="mPlayerMeta"></div>
+        <div id="mEpControls"></div>
+      </div>
+    </div>
+    <div class="m-bottomnav">
+      <button class="m-nav-item active" id="mNavHome" onclick="mNavClick('home')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>Home</span>
+      </button>
+      <button class="m-nav-item" id="mNavMovies" onclick="mNavClick('movies')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"/></svg>
+        <span>Movies</span>
+      </button>
+      <button class="m-nav-item" id="mNavSeries" onclick="mNavClick('series')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <span>Series</span>
+      </button>
+      <button class="m-nav-item" id="mNavMode" onclick="toggleMode()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="13" rx="2"/><polyline points="8 21 12 17 16 21"/></svg>
+        <span>Desktop</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // ────────────────────────────────────────────────
+    // Your original script remains 100% unchanged
+    // ────────────────────────────────────────────────
+
+    const API_KEY = 'd1007bf32c19224b866b56f63c3bd4a4';
+    const IMG = 'https://image.tmdb.org/t/p/';
+    const EMBED = 'vidsrc-embed.su';
+    const $ = id => document.getElementById(id);
+    let heroItem = null;
+    let isMobile = false;
+    let mCurrentTab = 'home';
+    let mHeroData = null;
+    const CATS = [
+      { title:'Trending This Week', sub:'Movies', url:`https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}`, type:'movie' },
+      { title:'Popular Series', sub:'TV Shows', url:`https://api.themoviedb.org/3/trending/tv/week?api_key=${API_KEY}`, type:'tv' },
+      { title:'Popular Movies', sub:'Movies', url:`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}`, type:'movie' },
+      { title:'Top Rated Series', sub:'TV Shows', url:`https://api.themoviedb.org/3/tv/popular?api_key=${API_KEY}`, type:'tv' },
+    ];
+    function closePopup() {
+      const o = $('popup-overlay');
+      if (!o) return;
+      o.style.transition = 'opacity .25s ease';
+      o.style.opacity = '0';
+      setTimeout(() => o.remove(), 260);
+    }
+    function updateTime() {
+      const t = $('mTime');
+      if (!t) return;
+      const now = new Date();
+      t.textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    }
+    setInterval(updateTime, 10000);
+    updateTime();
+    const DESKTOP_ICON = `<rect x="3" y="3" width="18" height="13" rx="2"/><polyline points="8 21 12 17 16 21"/>`;
+    const MOBILE_ICON = `<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>`;
+    function toggleMode() {
+      isMobile = !isMobile;
+      applyMode();
+      localStorage.setItem('yhujin-mode', isMobile ? 'mobile' : 'desktop');
+      if (isMobile) mobileLoadHome();
+      else loadCategories();
+    }
+    function applyMode() {
+      document.body.classList.toggle('mobile-mode', isMobile);
+      const lbl = $('modeLabel');
+      const icon = $('modeIcon');
+      if (lbl) lbl.textContent = isMobile ? 'Desktop View' : 'Mobile View';
+      if (icon) icon.innerHTML = isMobile ? DESKTOP_ICON : MOBILE_ICON;
+    }
+    function initMode() {
+      isMobile = localStorage.getItem('yhujin-mode') === 'mobile';
+      applyMode();
+    }
+    async function apiFetch(url) {
+      try {
+        const r = await fetch(url);
+        if (!r.ok) throw Error(r.status);
+        return r.json();
+      } catch(e) {
+        console.error(e);
+        return null;
+      }
+    }
+    function arrowSvg(d) {
+      const pts = d === 'left' ? '15 18 9 12 15 6' : '9 18 15 12 9 6';
+      return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="${pts}"/></svg>`;
+    }
+    function createCard(item, type) {
+      const name = item.title || item.name || 'Unknown';
+      const poster = item.poster_path ? `${IMG}w342${item.poster_path}` : '';
+      const tag = type === 'tv' ? 'Series' : 'Movie';
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <img src="${poster}" alt="${name}" loading="lazy" onerror="this.style.background='#1c1c1c'">
+        <div class="card-info">
+          <div class="card-title">${name}</div>
+          <span class="card-tag">${tag}</span>
+        </div>`;
+      card.addEventListener('click', () => loadPlayer(item.id, type, name, item));
+      return card;
+    }
+    function renderRow(cat, items) {
+      if (!items?.length) return;
+      const filtered = items.filter(i => i.poster_path);
+      const section = document.createElement('div');
+      section.className = 'row-section';
+      section.innerHTML = `<div class="row-header"><div class="row-title">${cat.title}</div><div class="row-subtitle">${cat.sub}</div></div>`;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'row-wrapper';
+      const scroll = document.createElement('div');
+      scroll.className = 'row-scroll';
+      const btnL = document.createElement('button');
+      btnL.className = 'arrow-btn arrow-left';
+      btnL.setAttribute('aria-label','Scroll left');
+      btnL.innerHTML = arrowSvg('left');
+      const btnR = document.createElement('button');
+      btnR.className = 'arrow-btn arrow-right';
+      btnR.setAttribute('aria-label','Scroll right');
+      btnR.innerHTML = arrowSvg('right');
+      const getAmt = () => Math.max(180, wrapper.clientWidth * 0.72);
+      btnL.addEventListener('click', () => { scroll.scrollLeft -= getAmt(); });
+      btnR.addEventListener('click', () => { scroll.scrollLeft += getAmt(); });
+      wrapper.addEventListener('mouseenter', () => wrapper.classList.add('hovered'));
+      wrapper.addEventListener('mouseleave', () => wrapper.classList.remove('hovered'));
+      filtered.forEach(item => {
+        const t = cat.type === 'mixed' ? (item.media_type || 'movie') : cat.type;
+        scroll.appendChild(createCard(item, t));
+      });
+      wrapper.appendChild(btnL);
+      wrapper.appendChild(scroll);
+      wrapper.appendChild(btnR);
+      section.appendChild(wrapper);
+      $('mainContent').appendChild(section);
+    }
+    function makeSkeleton() {
+      const s = document.createElement('div');
+      s.className = 'row-section';
+      s.innerHTML = `
+        <div class="row-header">
+          <div style="background:rgba(255,255,255,.07);border-radius:8px;width:210px;height:20px;animation:pulse 1.6s ease-in-out infinite;"></div>
+        </div>
+        <div class="loading-row">
+          ${Array(8).fill('<div class="skeleton-card"></div>').join('')}
+        </div>`;
+      return s;
+    }
+    async function loadCategories() {
+      const mc = $('mainContent');
+      mc.innerHTML = '';
+      $('heroSection').style.display = 'none';
+      heroItem = null;
+      const skels = CATS.map(() => {
+        const s = makeSkeleton();
+        mc.appendChild(s);
+        return s;
+      });
+      const results = await Promise.all(CATS.map(c => apiFetch(c.url)));
+      results.forEach((data, i) => {
+        skels[i]?.remove();
+        if (data?.results) {
+          renderRow(CATS[i], data.results);
+          if (i === 0 && data.results.length) {
+            const feat = data.results.find(r => r.backdrop_path) || data.results[0];
+            if (feat) showHero(feat, CATS[i].type);
+          }
+        }
+      });
+    }
+    function showHero(item, type) {
+      heroItem = { ...item, _type: type };
+      const name = item.title || item.name || '';
+      const backdrop = item.backdrop_path ? `${IMG}w1280${item.backdrop_path}` : '';
+      const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+      const rating = item.vote_average ? item.vote_average.toFixed(1) : '';
+      $('heroBg').style.backgroundImage = `url(${backdrop})`;
+      $('heroTitle').textContent = name;
+      $('heroMeta').textContent = [year, rating ? `${rating}/10` : '', type === 'tv' ? 'Series' : 'Movie'].filter(Boolean).join(' · ');
+      $('heroOverview').textContent = item.overview || '';
+      $('heroSection').style.display = 'block';
+      $('heroPlayBtn').onclick = () => loadPlayer(item.id, type, name, item);
+    }
+    async function loadPlayer(id, type, name) {
+      window.scrollTo({ top:0, behavior:'smooth' });
+      $('heroSection').style.display = 'none';
+      $('playerSection').style.display = 'block';
+      $('playerTitle').textContent = name;
+      $('episodeControls').innerHTML = '';
+      if (type === 'tv') {
+        const data = await apiFetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${API_KEY}`);
+        if (!data) return;
+        const ctrl = document.createElement('div');
+        ctrl.style.cssText = 'display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;';
+        ctrl.innerHTML = `
+          <span class="ep-label">Season</span>
+          <select class="ep-select" id="dynSeason"><option value="" disabled selected>Select Season</option></select>
+          <span class="ep-label">Episode</span>
+          <select class="ep-select" id="dynEp"><option value="" disabled selected>Select Episode</option></select>`;
+        $('episodeControls').appendChild(ctrl);
+        const dynSeason = $('dynSeason');
+        const dynEp = $('dynEp');
+        data.seasons.filter(s => s.season_number !== 0).forEach(s => dynSeason.add(new Option(`Season ${s.season_number}`, s.season_number)));
+        dynSeason.onchange = async () => {
+          const sn = dynSeason.value;
+          const epData = await apiFetch(`https://api.themoviedb.org/3/tv/${id}/season/${sn}?api_key=${API_KEY}`);
+          if (!epData) return;
+          dynEp.innerHTML = '<option value="" disabled selected>Select Episode</option>';
+          epData.episodes.forEach(ep => dynEp.add(new Option(`Ep ${ep.episode_number} — ${ep.name}`, ep.episode_number)));
+        };
+        dynEp.onchange = () => {
+          const sn = dynSeason.value;
+          const ep = dynEp.value;
+          if (sn && ep) {
+            $('player').src = `${EMBED}/tv?tmdb=${id}&season=${sn}&episode=${ep}`;
+            $('player').scrollIntoView({behavior:'smooth', block:'start'});
+          }
+        };
+      } else {
+        $('player').src = `${EMBED}/movie?tmdb=${id}`;
+        $('player').scrollIntoView({ behavior:'smooth', block:'start' });
+      }
+    }
+    function closePlayer() {
+      $('player').src = '';
+      $('playerSection').style.display = 'none';
+      $('episodeControls').innerHTML = '';
+      if (heroItem) showHero(heroItem, heroItem._type);
+      else window.scrollTo({ top:0, behavior:'smooth' });
+    }
+    function backToHome() {
+      $('searchBox').value = '';
+      closePlayer();
+      loadCategories();
+    }
+    async function searchContent() {
+      const q = $('searchBox').value.trim();
+      if (q.length < 2) { loadCategories(); return; }
+      const mc = $('mainContent');
+      mc.innerHTML = '';
+      $('heroSection').style.display = 'none';
+      const skWrap = document.createElement('div');
+      skWrap.style.cssText = 'width:min(1220px,100%);margin:0 auto;padding:6px 18px 0;position:relative;z-index:12;';
+      skWrap.innerHTML = `<div style="font-size:1.6rem;line-height:1;letter-spacing:-.04em;font-weight:800;margin-bottom:18px;color:#f7fdff;">Searching...</div>`;
+      const skG = document.createElement('div');
+      skG.className = 'search-grid';
+      for (let i = 0; i < 12; i++) skG.innerHTML += `<div class="skeleton-card" style="aspect-ratio:2/3;"></div>`;
+      skWrap.appendChild(skG);
+      mc.appendChild(skWrap);
+      const data = await apiFetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(q)}`);
+      skWrap.remove();
+      if (!data?.results?.length) {
+        mc.innerHTML = `<div class="empty-state">No results for "<strong style="color:#fff;">${q}</strong>"</div>`;
+        return;
+      }
+      const hdr = document.createElement('div');
+      hdr.style.cssText = 'width:min(1220px,100%);margin:0 auto;padding:6px 18px 18px;position:relative;z-index:12;';
+      hdr.innerHTML = `<div style="font-size:1.7rem;line-height:1;letter-spacing:-.04em;font-weight:800;color:#f7fdff;">Results for "<span style="color:var(--teal-2);">${q}</span>"</div>`;
+      mc.appendChild(hdr);
+      const grid = document.createElement('div');
+      grid.className = 'search-grid';
+      data.results.filter(i => i.poster_path && (i.media_type === 'movie' || i.media_type === 'tv')).forEach(i => grid.appendChild(createCard(i, i.media_type)));
+      mc.appendChild(grid);
+    }
+    let searchTimer;
+    $('searchBox').addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(searchContent, 320);
+    });
+    const mContent = $('mContent');
+    function mNavClick(tab) {
+      mCurrentTab = tab;
+      ['home','movies','series'].forEach(t => {
+        const el = $('mNav' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (el) el.classList.toggle('active', t === tab);
+      });
+      $('mNavMode').classList.remove('active');
+      $('mSearchBox').value = '';
+      if (tab === 'home') mobileLoadHome();
+      if (tab === 'movies') mobileLoadSection('Popular Movies', `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}`, 'movie');
+      if (tab === 'series') mobileLoadSection('Popular Series', `https://api.themoviedb.org/3/tv/popular?api_key=${API_KEY}`, 'tv');
+    }
+    function mobileGoHome() {
+      mNavClick('home');
+    }
+    function mRenderHero(item, type) {
+      mHeroData = { ...item, _type: type };
+      const name = item.title || item.name || '';
+      const backdrop = item.backdrop_path ? `${IMG}w780${item.backdrop_path}` : '';
+      const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+      const rating = item.vote_average ? item.vote_average.toFixed(1) : '';
+      const safeName = name.replace(/'/g, "\\'");
+      const hero = document.createElement('div');
+      hero.className = 'm-hero';
+      hero.innerHTML = `
+        <div class="m-hero-bg" style="background-image:url(${backdrop})"></div>
+        <div class="m-hero-grad"></div>
+        <div class="m-hero-content">
+          <div class="m-hero-badge">Trending Now</div>
+          <div class="m-hero-title">${name}</div>
+          <div class="m-hero-meta">${[year, rating ? `${rating}/10` : '', type === 'tv' ? 'Series' : 'Movie'].filter(Boolean).join(' · ')}</div>
+          <button class="m-hero-btn" onclick="mOpenPlayer(${item.id},'${type}','${safeName}')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Watch Now
+          </button>
+        </div>`;
+      return hero;
+    }
+    function mCreateCard(item, type) {
+      const name = item.title || item.name || '';
+      const poster = item.poster_path ? `${IMG}w342${item.poster_path}` : '';
+      const tag = type === 'tv' ? 'Series' : 'Movie';
+      const card = document.createElement('div');
+      card.className = 'm-card';
+      card.innerHTML = `
+        <img src="${poster}" alt="${name}" loading="lazy" onerror="this.style.background='#1c1c1c'">
+        <div class="m-card-label">
+          <div class="m-card-title">${name}</div>
+          <div class="m-card-type">${tag}</div>
+        </div>`;
+      card.addEventListener('click', () => mOpenPlayer(item.id, type, name, item));
+      return card;
+    }
+    function mSkelGrid(n = 12) {
+      const wrap = document.createElement('div');
+      wrap.className = 'm-skel-grid';
+      for (let i = 0; i < n; i++) wrap.innerHTML += `<div class="m-skel-card"></div>`;
+      return wrap;
+    }
+    async function mobileLoadHome() {
+      mContent.innerHTML = '';
+      mContent.scrollTop = 0;
+      const heroSkel = document.createElement('div');
+      heroSkel.className = 'm-hero-skel';
+      mContent.appendChild(heroSkel);
+      const secSkels = CATS.map(c => {
+        const sec = document.createElement('div');
+        sec.innerHTML = `<div class="m-section-label">${c.title}</div>`;
+        sec.appendChild(mSkelGrid(6));
+        mContent.appendChild(sec);
+        return sec;
+      });
+      const results = await Promise.all(CATS.map(c => apiFetch(c.url)));
+      heroSkel.remove();
+      if (results[0]?.results?.length) {
+        const feat = results[0].results.find(r => r.backdrop_path) || results[0].results[0];
+        if (feat) mContent.prepend(mRenderHero(feat, CATS[0].type));
+      }
+      results.forEach((data, i) => {
+        secSkels[i].remove();
+        if (!data?.results?.length) return;
+        const filtered = data.results.filter(r => r.poster_path).slice(0, 12);
+        const sec = document.createElement('div');
+        sec.innerHTML = `<div class="m-section-label">${CATS[i].title}</div>`;
+        const grid = document.createElement('div');
+        grid.className = 'm-card-grid';
+        filtered.forEach(item => {
+          const t = CATS[i].type === 'mixed' ? (item.media_type || 'movie') : CATS[i].type;
+          grid.appendChild(mCreateCard(item, t));
+        });
+        sec.appendChild(grid);
+        mContent.appendChild(sec);
+      });
+    }
+    async function mobileLoadSection(title, url, type) {
+      mContent.innerHTML = '';
+      mContent.scrollTop = 0;
+      const label = document.createElement('div');
+      label.className = 'm-section-label';
+      label.textContent = title;
+      const skel = mSkelGrid(18);
+      mContent.appendChild(label);
+      mContent.appendChild(skel);
+      const data = await apiFetch(url);
+      skel.remove();
+      if (!data?.results?.length) {
+        mContent.innerHTML += `<div class="m-empty">Nothing found.</div>`;
+        return;
+      }
+      const grid = document.createElement('div');
+      grid.className = 'm-card-grid';
+      data.results.filter(r => r.poster_path).forEach(item => grid.appendChild(mCreateCard(item, type)));
+      mContent.appendChild(grid);
+    }
+    async function mobileSearch() {
+      const q = $('mSearchBox').value.trim();
+      if (q.length < 2) { mNavClick(mCurrentTab); return; }
+      mContent.innerHTML = '';
+      mContent.scrollTop = 0;
+      const label = document.createElement('div');
+      label.className = 'm-section-label';
+      label.innerHTML = `Results for "<span style="color:var(--teal-2);">${q}</span>"`;
+      const skel = mSkelGrid(12);
+      mContent.appendChild(label);
+      mContent.appendChild(skel);
+      const data = await apiFetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(q)}`);
+      skel.remove();
+      if (!data?.results?.length) {
+        mContent.innerHTML += `<div class="m-empty">No results for "${q}"</div>`;
+        return;
+      }
+      const grid = document.createElement('div');
+      grid.className = 'm-card-grid';
+      data.results.filter(i => i.poster_path && (i.media_type === 'movie' || i.media_type === 'tv')).forEach(i => grid.appendChild(mCreateCard(i, i.media_type)));
+      mContent.appendChild(grid);
+    }
+    let mSearchTimer;
+    $('mSearchBox').addEventListener('input', () => {
+      clearTimeout(mSearchTimer);
+      mSearchTimer = setTimeout(mobileSearch, 320);
+    });
+    async function mOpenPlayer(id, type, name, item) {
+      const ps = $('mPlayerScreen');
+      ps.style.display = 'flex';
+      ps.style.flexDirection = 'column';
+      $('mPlayerName').textContent = name;
+      $('mPlayerTitle').textContent = name;
+      $('mEpControls').innerHTML = '';
+      const year = item ? (item.release_date || item.first_air_date || '').slice(0,4) : '';
+      const rating = item?.vote_average ? item.vote_average.toFixed(1) : '';
+      $('mPlayerMeta').textContent = [year, rating ? `${rating}/10` : '', type === 'tv' ? 'Series' : 'Movie'].filter(Boolean).join(' · ');
+      if (type === 'tv') {
+        const data = await apiFetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${API_KEY}`);
+        if (!data) return;
+        const ctrl = document.createElement('div');
+        ctrl.innerHTML = `
+          <div class="m-ep-row">
+            <span class="m-ep-label">Season</span>
+            <select class="m-ep-select" id="mDynSeason"><option value="" disabled selected>Select Season</option></select>
+          </div>
+          <div class="m-ep-row">
+            <span class="m-ep-label">Episode</span>
+            <select class="m-ep-select" id="mDynEp"><option value="" disabled selected>Select Episode</option></select>
+          </div>`;
+        $('mEpControls').appendChild(ctrl);
+        const mDynSeason = $('mDynSeason');
+        const mDynEp = $('mDynEp');
+        data.seasons.filter(s => s.season_number !== 0).forEach(s => mDynSeason.add(new Option(`Season ${s.season_number}`, s.season_number)));
+        mDynSeason.onchange = async () => {
+          const sn = mDynSeason.value;
+          const epData = await apiFetch(`https://api.themoviedb.org/3/tv/${id}/season/${sn}?api_key=${API_KEY}`);
+          if (!epData) return;
+          mDynEp.innerHTML = '<option value="" disabled selected>Select Episode</option>';
+          epData.episodes.forEach(ep => mDynEp.add(new Option(`Ep ${ep.episode_number} — ${ep.name}`, ep.episode_number)));
+        };
+        mDynEp.onchange = () => {
+          const sn = mDynSeason.value;
+          const ep = mDynEp.value;
+          if (sn && ep) $('mPlayer').src = `${EMBED}/tv?tmdb=${id}&season=${sn}&episode=${ep}`;
+        };
+      } else {
+        $('mPlayer').src = `${EMBED}/movie?tmdb=${id}`;
+      }
+    }
+    function mClosePlayer() {
+      $('mPlayer').src = '';
+      $('mPlayerScreen').style.display = 'none';
+      $('mEpControls').innerHTML = '';
+    }
+    // particles
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let w = 0;
+    let h = 0;
+    let particles = [];
+    const particleCount = 46;
+    function resizeParticles(){
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+      particles = Array.from({length: particleCount}, createParticle);
+    }
+    function createParticle(){
+      return {
+        x: Math.random() * w,
+        y: h * (0.58 + Math.random() * 0.34),
+        r: Math.random() * 1.7 + 0.35,
+        a: Math.random() * 0.22 + 0.05,
+        vx: (Math.random() - 0.5) * 0.12,
+        vy: -(Math.random() * 0.16 + 0.02)
+      };
+    }
+    function drawParticle(p){
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(118,244,255,${p.a})`;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = "rgba(65,230,255,0.34)";
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+    function animateParticles(){
+      ctx.clearRect(0, 0, w, h);
+      const floorGlow = ctx.createRadialGradient(
+        w * 0.5, h * 0.95, 0,
+        w * 0.5, h * 0.95, h * 0.44
+      );
+      floorGlow.addColorStop(0, "rgba(0,238,255,0.12)");
+      floorGlow.addColorStop(0.24, "rgba(0,238,255,0.06)");
+      floorGlow.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = floorGlow;
+      ctx.fillRect(0, 0, w, h);
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.y < h * 0.34 || p.x < -20 || p.x > w + 20) {
+          Object.assign(p, createParticle(), {
+            x: Math.random() * w,
+            y: h * (0.78 + Math.random() * 0.12)
+          });
+        }
+        drawParticle(p);
+      }
+      requestAnimationFrame(animateParticles);
+    }
+    window.addEventListener('resize', resizeParticles);
+    initMode();
+    resizeParticles();
+    animateParticles();
+    if (isMobile) mobileLoadHome();
+    else loadCategories();
+    // Disable right-click (context menu)
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            // Optional: show a message
+            // alert("Right-click is disabled on this website.");
+        });
+
+        // Disable keyboard shortcuts for View Source, DevTools, etc.
+        document.addEventListener('keydown', function(e) {
+            // F12
+            if (e.keyCode === 123) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl + Shift + I (DevTools)
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl + Shift + J (Console)
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl + Shift + C (Inspect)
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl + U (View Source)
+            if (e.ctrlKey && e.keyCode === 85) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl + S (Save Page)
+            if (e.ctrlKey && e.keyCode === 83) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl + P (Print)
+            if (e.ctrlKey && e.keyCode === 80) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Disable text selection and dragging
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+        });
+
+        // Extra layer: try to detect DevTools open (not 100% reliable)
+        let devtoolsOpen = false;
+        const threshold = 160; // pixel threshold for detection
+
+        function detectDevTools() {
+            if (window.outerWidth - window.innerWidth > threshold || 
+                window.outerHeight - window.innerHeight > threshold) {
+                if (!devtoolsOpen) {
+                    devtoolsOpen = true;
+                    // You can redirect, alert, or blank the page here
+                    // document.body.innerHTML = "<h1 style='text-align:center;color:red;'>Access Denied</h1>";
+                    console.log("%cDevTools detected!", "color: red; font-size: 20px;");
+                }
+            } else {
+                devtoolsOpen = false;
+            }
+        }
+
+        setInterval(detectDevTools, 500);
+  </script>
+</body>
+</html>
